@@ -20,20 +20,26 @@ Restaurant.initialize(database.url).then(()=>{
         console.log("app listening on port "+ port);
     })
 }).catch(err=>{
-    console.log("Error Initializing:",err);
+    console.log("Error Initializing in mongodb and server",err);
 })
 
-app.get('/api/restaurants', async (req, res) => {
-    const page = parseInt(req.query.page) || 1;
-    const perPage = parseInt(req.query.perPage) || 10;
+app.get('/api/restaurants', [
+    body('page').isNumeric().notEmpty(),
+    body('perPage').isNumeric().notEmpty(),
+    body('borough').optional().isString(),
+], async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ message: 'Page  not found' });
+    }
     const borough = req.query.borough || '';
 
     try {
-        const restaurants = await Restaurant.getAllRestaurants(page, perPage, borough);
+        const restaurants = await Restaurant.getAllRestaurants(req.query.page, req.query.perPage, borough);
         res.json(restaurants);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Internal Server Error' });
+        res.status(400).json({ message: 'Page  not found' });
     }
 });
 
