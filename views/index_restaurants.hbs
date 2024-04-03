@@ -1,0 +1,31 @@
+{{!-- /********************************************************************************** 
+ * ITE5315 – Assignment 4* I declare that this assignment is my own work in accordance 
+ * with Humber Academic Policy.* No part of this assignment has been copied manually or 
+ * electronically from any other source* (including web sites) or distributed to other students.** 
+ * Name: Meenu Mathew
+ * Student ID: N01582144
+ * Date: 30-03-2024
+ * **********************************************************************************/ --}}
+
+<h1>All Restaurants</h1>
+<table border="1">
+    <thead>
+        <th>ID</th><th>Name</th><th>Cusine</th><th>Borough</th><th>Address</th>
+    </thead>
+    <tbody>
+       
+    {{#each restaurants}}
+        <tr> 
+            <td>{{restaurant_id}}</td>
+            <td>{{name}}</td>
+            <td>{{cusine}}</td>
+            <td>{{borough}}</td>
+            <td>{{address.building}}, {{address.street}}</td>
+            
+        </tr>
+    {{/each}}
+    </tbody>
+</table>
+
+
+

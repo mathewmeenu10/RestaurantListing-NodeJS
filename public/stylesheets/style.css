@@ -1,0 +1,71 @@
+/********************************************************************************** 
+    * ITE5315 – Assignment 2* I declare that this assignment is my own work in accordance 
+    * with Humber Academic Policy.* No part of this assignment has been copied manually or 
+    * electronically from any other source* (including web sites) or distributed to other students.** 
+    * Name: Meenu Mathew
+    * Student ID: N01582144
+    * Date: 18-02-2024
+    * **********************************************************************************/ 
+body {
+    padding: 50px;
+    font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+    background-color: white;
+    color: #333333;
+  }
+  div {
+    align-items: center;
+    justify-content: center;
+    font-size: 16px !important;
+  }
+  .header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #000;
+    z-index: 999;
+    height: 80px;
+    
+}
+.header-inner {
+    color: white;
+    font-weight: 800;
+    text-align: center;
+    margin-top: 25px;
+}
+footer {
+    display: block;
+}
+.footer {
+    left: 0;
+    bottom:0;
+    position: fixed;
+    width: 100%;
+    background-color: #000;
+    z-index: 999;
+    height: 80px;
+    border-top: 1px solid #292622;
+    
+}
+.footer-inner {
+    color: white;
+    font-weight: 700;
+    text-align: center;
+    margin-top: 25px;
+}
+.page{
+    /* display: flex;  */
+    justify-content: center;
+    padding-top: 5%;
+    text-align: center;
+}
+  a {
+    color: #00B7FF;
+  }
+.books_list{
+    text-align: left;
+}
+
+.mark{
+    background-color: aqua;
+}
