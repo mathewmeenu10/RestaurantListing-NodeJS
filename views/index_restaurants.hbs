@@ -6,8 +6,25 @@
  * Student ID: N01582144
  * Date: 30-03-2024
  * **********************************************************************************/ --}}
+<style>
+    div table {
+        align: center !important;
+    }
+</style>
 
-<h1>All Restaurants</h1>
+<h1 class="head-rest">All Restaurants</h1>
+<a href="list_all_restaurants" class="go_back_btn" style="margin-bottom:10px">Go Back</a>
+<div class="form-index-design">
+<form action="/api/list_all_restaurants" method="post">
+    <label for="page">Page:</label>
+    <input type="number" name="page" id="page" required><br>
+    <label for="perPage">Per Page:</label>
+    <input type="number" name="perPage" id="perPage" required><br>
+    <label for="borough">Borough:</label>
+    <input type="text" name="borough" id="borough"><br>
+    <button type="submit" class="go_back_btn">Search</button>
+</form>
+</div>
 <table border="1">
     <thead>
         <th>ID</th><th>Name</th><th>Cusine</th><th>Borough</th><th>Address</th>
@@ -18,7 +35,7 @@
         <tr> 
             <td>{{restaurant_id}}</td>
             <td>{{name}}</td>
-            <td>{{cusine}}</td>
+            <td>{{cuisine}}</td>
             <td>{{borough}}</td>
             <td>{{address.building}}, {{address.street}}</td>
             

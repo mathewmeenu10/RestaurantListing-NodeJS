@@ -9,8 +9,10 @@
 body {
     padding: 50px;
     font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
-    background-color: white;
+    /* background-color: white; */
     color: #333333;
+    background-image: url('../images/1.jpg');
+    overflow:auto;
   }
   div {
     align-items: center;
@@ -22,11 +24,16 @@ body {
     top: 0;
     left: 0;
     width: 100%;
-    background-color: #000;
+    background-color: hsl(228.18deg 82.68% 39.48%);
     z-index: 999;
     height: 80px;
     
 }
+
+.head-rest {
+    color: white;
+}
+
 .header-inner {
     color: white;
     font-weight: 800;
@@ -41,7 +48,7 @@ footer {
     bottom:0;
     position: fixed;
     width: 100%;
-    background-color: #000;
+    background-color: hsl(230.4deg 52.73% 69.02%);
     z-index: 999;
     height: 80px;
     border-top: 1px solid #292622;
@@ -56,7 +63,7 @@ footer {
 .page{
     /* display: flex;  */
     justify-content: center;
-    padding-top: 5%;
+    padding-top: 20px;
     text-align: center;
 }
   a {
@@ -68,4 +75,58 @@ footer {
 
 .mark{
     background-color: aqua;
+}
+table {
+    width: 80%;
+    background-color: white;
+}
+th {
+    height: 30px;
+    background-color: #00B7FF;
+}
+td {
+    height: 10px;
+    vertical-align: center;
+}
+th, td {
+    padding: 15px;
+}
+tr:hover {background-color: gainsboro;}
+tr:nth-child(even) {background-color: #f2f2f2;}
+
+.go_back_btn {
+    background-color: #4155b9; /* Green */
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    border-radius: 4px;
+  }
+
+  input {
+    width: 50%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+  }
+
+  .form-design {
+    border-radius: 5px;
+    background-color: #f2f2f2;
+    padding: 20px;
+    width: 800px;
+    margin: auto;  }
+.form-index-design {
+    border-radius: 5px;
+    background-color: #f2f2f2;
+    padding: 5px;
+    width: 400px;
+    margin: auto;
+    margin-bottom:10px;
 }
