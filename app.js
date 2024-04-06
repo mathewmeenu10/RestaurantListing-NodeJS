@@ -1,3 +1,12 @@
+/********************************************************************************** 
+ * ITE5315 – Assignment 4* I declare that this assignment is my own work in accordance 
+ * with Humber Academic Policy.* No part of this assignment has been copied manually or 
+ * electronically from any other source* (including web sites) or distributed to other students.** 
+ * Name: Meenu Mathew
+ * Student ID: N01582144
+ * Date: 06-04-2024
+ * **********************************************************************************/
+
 require("dotenv").config();
 const path = require('node:path');
 const express = require("express");
@@ -6,7 +15,7 @@ const appConfig = require("./package.json");
 
 const { engine } = require('express-handlebars');
 const app = express();
-const { body, validationResult } = require('express-validator');
+const { body, param, query, validationResult } = require('express-validator');
 const database = require("./config/database");
 const bodyParser = require("body-parser"); // pull information from HTML POST (express4)
 
@@ -36,31 +45,36 @@ Restaurant.initialize(database.url).then(()=>{
     console.log("Error Initializing in mongodb and server",err);
 })
 
+//function to display form to search restaurant
 app.get('/api/list_all_restaurants', (req, res) => {
     res.render('search_restaurants', { 
         title: "Search Restaurants",
     });
 });
 
-app.post('/api/list_all_restaurants', async (req, res) => {
+//function to display all restaurants in a view page
+app.post('/api/list_all_restaurants', 
+        [query('page').isNumeric().exists(),
+        query('perPage').isNumeric().exists(),
+        query('borough').isString().optional(),],async (req, res) => {
 
-    let page = req.body.page;
-    let perPage = req.body.borough;
-    let borough = req.body.borough || '';
+    // let page = req.body.page;
+    // let perPage = req.body.borough;
+    // let borough = req.body.borough || '';
 
-    const validationErrors = validationResult({
-        query: { page, perPage, borough }
-    });
+    // const validationErrors = validationResult({
+    //     query: { page, perPage, borough }
+    // });
 
-    if (!validationErrors.isEmpty()) {
-        throw { status: 400, message: 'Validation failed', errors: validationErrors.array() };
-    }
+    // if (!validationErrors.isEmpty()) {
+    //     throw { status: 400, message: 'Validation failed', errors: validationErrors.array() };
+    // }
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         // return res.status(400).json({ errors: errors.array() });
-        return res.status(400).json({ message: 'Page  not found' });
+        return res.status(400).json({ message: 'Bad request' });
     }
-    // borough = req.query.borough || '';
+    borough = req.query.borough || '';
 
     try {
         const restaurants = await Restaurant.getAllRestaurants(req.body.page, req.body.perPage, borough);
@@ -71,46 +85,41 @@ app.post('/api/list_all_restaurants', async (req, res) => {
         // res.json(restaurants);
     } catch (error) {
         console.error(error);
-        res.status(400).json({ message: 'Page  not found' });
+        res.status(400).json({ message: 'Bad request' });
     }
 });
 
-app.get('/api/restaurants', async (req, res) => {
+//function to fetch all restaurants data
+app.get('/api/restaurants',
+query('page').isNumeric().exists(),
+query('perPage').isNumeric().exists(),
+query('borough').isString().optional(),
+async (req, res) => {
 
-    let page = req.query.page;
-    let perPage = req.query.borough;
-    let borough = req.query.borough || '';
-
-    const validationErrors = validationResult({
-        query: { page, perPage, borough }
-    });
-
-    if (!validationErrors.isEmpty()) {
-        throw { status: 400, message: 'Validation failed', errors: validationErrors.array() };
-    }
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         // return res.status(400).json({ errors: errors.array() });
-        return res.status(400).json({ message: 'Page  not found' });
+        return res.status(400).json({ message: 'Bad request' });
     }
-    // borough = req.query.borough || '';
+    borough = req.query.borough || '';
 
     try {
         const restaurants = await Restaurant.getAllRestaurants(req.query.page, req.query.perPage, borough);
         res.json(restaurants);
     } catch (error) {
         console.error(error);
-        res.status(400).json({ message: 'Page  not found' });
+        res.status(400).json({ message: 'Bad request' });
     }
 });
 
+//function to fetch details of a single restaurant
 app.get('/api/restaurants/:id', async (req, res) => {
     const id = req.params.id;
 
     try {
         const restaurant = await Restaurant.getRestaurantById(id);
         if (!restaurant) {
-            return res.status(404).json({ message: 'Restaurant not found' });
+            return res.status(400).json({ message: 'Restaurant not found' });
         }
         res.json(restaurant);
     } catch (error) {
@@ -119,6 +128,7 @@ app.get('/api/restaurants/:id', async (req, res) => {
     }
 });
 
+//function to add new restaurant using post method
 app.post('/api/restaurants', [
     body('name').not().isEmpty().withMessage('Name is required'),
     body('cuisine').not().isEmpty().withMessage('Cuisine is required'),
@@ -138,6 +148,7 @@ app.post('/api/restaurants', [
     }
 });
 
+//function to update details of a restaurant
 app.put('/api/restaurants/:id',  [
     body('name').not().isEmpty().withMessage('Name is required'),
     body('cuisine').not().isEmpty().withMessage('Cuisine is required'),
@@ -158,6 +169,7 @@ app.put('/api/restaurants/:id',  [
     }
 });
 
+//function to delete a restaurant
 app.delete('/api/restaurants/:id', async (req, res) => {
     const id = req.params.id;
 
