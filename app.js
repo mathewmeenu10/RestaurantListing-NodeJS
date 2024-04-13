@@ -12,12 +12,19 @@ const path = require('node:path');
 const express = require("express");
 const mongoose = require("mongoose");
 const appConfig = require("./package.json");
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
+
+const BASE_URL = 'http://localhost:8000';
 
 const { engine } = require('express-handlebars');
 const app = express();
 const { body, param, query, validationResult } = require('express-validator');
 const database = require("./config/database");
 const bodyParser = require("body-parser"); // pull information from HTML POST (express4)
+app.use(cookieParser());
+
 
 app.engine('.hbs', engine({
     extname: '.hbs',
@@ -36,6 +43,7 @@ app.use(bodyParser.json({ type: "application/vnd.api+json" })); // parse applica
 const Handlebars = require('handlebars');
 
 const Restaurant = require("./models/restaurant");
+const User = require("./models/user");
 
 Restaurant.initialize(database.url).then(()=>{
     app.listen(port,()=>{
@@ -44,9 +52,34 @@ Restaurant.initialize(database.url).then(()=>{
 }).catch(err=>{
     console.log("Error Initializing in mongodb and server",err);
 })
+//initialize array of posts
+const posts = [{username: "admin",title: "webAdmin",},{username: "nadmin",title: "netAdmin",},];
+// app.get("/posts", (req, res) => {res.json(posts);});
+//function to verify JWT token
+function verifyToken(req, res, next) {
+    const token = req.cookies.token;
+    if (!token) {
+        // return res.status(401).json({ message: 'Token not provided' });
+        res.redirect('/');
+    }
+    jwt.verify(token, process.env.SECRETKEY, (err, decoded) => {
+        if (err) {
+            // return res.status(401).json({ message: 'Invalid token' });
+            res.redirect('/');
+        }
+        req.userId = decoded.id;
+        next();
+    });
+}
+
+app.get('/', (req, res) => {
+    res.render('index', { 
+        title: "Welcome to restaurants data",
+    });
+});
 
 //function to display form to search restaurant
-app.get('/api/list_all_restaurants', (req, res) => {
+app.get('/api/list_all_restaurants', verifyToken,(req, res) => {
     res.render('search_restaurants', { 
         title: "Search Restaurants",
     });
@@ -54,9 +87,9 @@ app.get('/api/list_all_restaurants', (req, res) => {
 
 //function to display all restaurants in a view page
 app.post('/api/list_all_restaurants', 
-        [query('page').isNumeric().exists(),
-        query('perPage').isNumeric().exists(),
-        query('borough').isString().optional(),],async (req, res) => {
+        [body('page').isNumeric().exists(),
+        body('perPage').isNumeric().exists(),
+        body('borough').isString().optional(),],verifyToken,async (req, res) => {
 
     // let page = req.body.page;
     // let perPage = req.body.borough;
@@ -70,6 +103,7 @@ app.post('/api/list_all_restaurants',
     //     throw { status: 400, message: 'Validation failed', errors: validationErrors.array() };
     // }
     const errors = validationResult(req);
+    console.log(errors);
     if (!errors.isEmpty()) {
         // return res.status(400).json({ errors: errors.array() });
         return res.status(400).json({ message: 'Bad request' });
@@ -93,7 +127,7 @@ app.post('/api/list_all_restaurants',
 app.get('/api/restaurants',
 query('page').isNumeric().exists(),
 query('perPage').isNumeric().exists(),
-query('borough').isString().optional(),
+query('borough').isString().optional(), verifyToken,
 async (req, res) => {
 
     const errors = validationResult(req);
@@ -113,7 +147,7 @@ async (req, res) => {
 });
 
 //function to fetch details of a single restaurant
-app.get('/api/restaurants/:id', async (req, res) => {
+app.get('/api/restaurants/:id', verifyToken, async (req, res) => {
     const id = req.params.id;
 
     try {
@@ -127,13 +161,29 @@ app.get('/api/restaurants/:id', async (req, res) => {
         res.status(500).json({ message: 'Internal Server Error' });
     }
 });
+app.get('/api/restaurant_view/:id', verifyToken, async (req, res) => {
+    const id = req.params.id;
 
+    try {
+        const restaurant = await Restaurant.getRestaurantById(id);
+        if (!restaurant) {
+            return res.status(400).json({ message: 'Restaurant not found' });
+        }
+        res.render('restaurant_view', { 
+            title: restaurant.name,
+            restaurant
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
 //function to add new restaurant using post method
 app.post('/api/restaurants', [
     body('name').not().isEmpty().withMessage('Name is required'),
     body('cuisine').not().isEmpty().withMessage('Cuisine is required'),
     body('restaurant_id').not().isEmpty().withMessage('Restaurant ID is required'),
-], async (req, res) => {
+], verifyToken, async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -153,7 +203,7 @@ app.put('/api/restaurants/:id',  [
     body('name').not().isEmpty().withMessage('Name is required'),
     body('cuisine').not().isEmpty().withMessage('Cuisine is required'),
     body('restaurant_id').not().isEmpty().withMessage('Restaurant ID is required'),
-], async (req, res) => {
+], verifyToken, async (req, res) => {
     const id = req.params.id;
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -170,7 +220,7 @@ app.put('/api/restaurants/:id',  [
 });
 
 //function to delete a restaurant
-app.delete('/api/restaurants/:id', async (req, res) => {
+app.delete('/api/restaurants/:id', verifyToken, async (req, res) => {
     const id = req.params.id;
 
     try {
@@ -180,4 +230,57 @@ app.delete('/api/restaurants/:id', async (req, res) => {
         console.error(error);
         res.status(500).json({ message: 'Internal Server Error' });
     }
+});
+
+//user signup
+app.get('/api/signup', (req, res) => {
+    res.render('signup', { 
+        title: "Signup",
+    });
+});
+app.post('/api/signup', [
+    body('name').not().isEmpty().withMessage('Name is required'),
+    body('username').not().isEmpty().withMessage('Username is required'),
+    body('password').not().isEmpty().withMessage('Password is required'),
+    body('confirm_password').custom((value, { req }) => {
+        if (value !== req.body.password) {
+            throw new Error('Passwords do not match');
+        }
+        return true;
+    }).withMessage('Passwords do not match')], async (req, res) => {
+    
+    const hashedPassword = bcrypt.hashSync(req.body.password, 8);
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    try {
+        const newUser = await User.addNewUser({name:req.body.name, username:req.body.username, password:hashedPassword});
+        console.log("success");
+        res.redirect('/');
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+    
+});
+app.get('/api/login', async (req, res) => {
+    res.render('index', { 
+        title: "Login",
+    });
+    
+});
+
+app.post('/api/login', async (req, res) => {
+    // const hashedPassword = bcrypt.hashSync(req.body.password, 8);
+    const user = await User.getUser(req.body.username);
+    console.log(user);
+    if (!user || !bcrypt.compareSync(req.body.password, user.password)) {
+        return res.status(401).json({ message: 'Invalid username or password' });
+    }
+    const accessToken = jwt.sign({ id: user.id }, process.env.SECRETKEY, { expiresIn: '1h' });
+    // res.setHeader('Authorization', accessToken);
+    res.cookie('token', accessToken, { httpOnly: true });
+    res.redirect('/api/list_all_restaurants');
 });

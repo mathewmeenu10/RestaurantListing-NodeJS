@@ -13,9 +13,9 @@
 </style>
 
 <h1 class="head-rest">All Restaurants</h1>
-<a href="list_all_restaurants" class="go_back_btn" style="margin-bottom:10px">Go Back</a>
+<a href="{{baseUrl}}/api/list_all_restaurants" class="go_back_btn" style="margin-bottom:10px">Go Back</a>
 <div class="form-index-design">
-<form action="/api/list_all_restaurants" method="post">
+<form action="{{baseUrl}}/api/list_all_restaurants" method="post">
     <label for="page">Page:</label>
     <input type="number" name="page" id="page" required><br>
     <label for="perPage">Per Page:</label>
@@ -27,7 +27,7 @@
 </div>
 <table border="1">
     <thead>
-        <th>ID</th><th>Name</th><th>Cusine</th><th>Borough</th><th>Address</th>
+        <th>ID</th><th>Name</th><th>Cusine</th><th>Borough</th><th>Address</th><th>View</th>
     </thead>
     <tbody>
        
@@ -38,7 +38,7 @@
             <td>{{cuisine}}</td>
             <td>{{borough}}</td>
             <td>{{address.building}}, {{address.street}}</td>
-            
+            <td><a href="{{baseUrl}}/api/restaurant_view/{{id}}">View</a></td>
         </tr>
     {{/each}}
     </tbody>
